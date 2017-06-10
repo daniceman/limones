@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/fhs/gompd/mpd"
 	"os"
 	"os/exec"
 	"strconv"
@@ -23,7 +24,7 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["date"].Cache + sep + items["kernel"].Cache
+	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
@@ -87,10 +88,40 @@ func main() {
 	}}
 	items["battery"].Start()
 
+	items["music"] = &Item{"", func(i *Item) {
+		for {
+			time.Sleep(time.Second * time.Duration(5))
+
+			client, err := mpd.Dial("tcp", "localhost:6600")
+			if err != nil {
+				continue
+			}
+			defer client.Close()
+
+			attrs, err := client.CurrentSong()
+			if err != nil {
+				continue
+			}
+
+			artist := attrs["Artist"]
+			if artist == "" {
+				artist = "n.a."
+			}
+			title := attrs["Title"]
+			if title == "" {
+				title = "n.a."
+			}
+
+			var buffer bytes.Buffer
+			buffer.WriteString(artist + " - " + title)
+			i.Cache = buffer.String()
+		}
+	}}
+	items["music"].Start()
 	items["date"] = &Item{"", func(i *Item) {
 		for {
 			t := time.Now().UTC()
-			i.Cache = t.Weekday().String() + " " + strconv.Itoa(t.Day()) + " " + t.Month().String() + " " + strconv.Itoa(t.Year()) + " " + strconv.Itoa(t.Hour()) + ":" + strconv.Itoa(t.Minute()) + " UTC"
+			i.Cache = t.Weekday().String() + " " + strconv.Itoa(t.Day()) + " " + t.Month().String() + " " + strconv.Itoa(t.Year()) + " " + fmt.Sprintf("%02d", t.Hour()) + ":" + fmt.Sprintf("%02d", t.Minute()) + " UTC"
 
 			time.Sleep(time.Second * time.Duration(1))
 
