@@ -90,10 +90,9 @@ func main() {
 
 	items["music"] = &Item{"", func(i *Item) {
 		for {
-			time.Sleep(time.Second * time.Duration(5))
-
 			client, err := mpd.Dial("tcp", "localhost:6600")
 			if err != nil {
+				time.Sleep(time.Second * time.Duration(5))
 				continue
 			}
 			defer client.Close()
@@ -115,6 +114,7 @@ func main() {
 			var buffer bytes.Buffer
 			buffer.WriteString(artist + " - " + title)
 			i.Cache = buffer.String()
+			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
 	items["music"].Start()
