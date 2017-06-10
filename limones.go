@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -22,7 +23,7 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache
+	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["date"].Cache + sep + items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
@@ -85,6 +86,17 @@ func main() {
 		}
 	}}
 	items["battery"].Start()
+
+	items["date"] = &Item{"", func(i *Item) {
+		for {
+			t := time.Now().UTC()
+			i.Cache = t.Weekday().String() + " " + strconv.Itoa(t.Day()) + " " + t.Month().String() + " " + strconv.Itoa(t.Year()) + " " + strconv.Itoa(t.Hour()) + ":" + strconv.Itoa(t.Minute()) + " UTC"
+
+			time.Sleep(time.Second * time.Duration(1))
+
+		}
+	}}
+	items["date"].Start()
 	items["kernel"] = &Item{"", func(i *Item) {
 		for {
 			i.Cache = Command("uname", "-r")
