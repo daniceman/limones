@@ -24,7 +24,7 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
+	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + "%{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
@@ -39,14 +39,14 @@ func main() {
 	items["host"] = &Item{"", func(i *Item) {
 		for {
 			i.Cache, _ = os.Hostname()
-			time.Sleep(time.Second * time.Duration(100))
+			time.Sleep(time.Second * time.Duration(1000))
 		}
 	}}
 	items["host"].Start()
 	items["desktop"] = &Item{"", func(i *Item) {
 		for {
 			i.Cache = Command("bash", "-c", "xprop -root _NET_CURRENT_DESKTOP | awk '{print $3+1}'")
-			time.Sleep(time.Second * time.Duration(2))
+			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
 	items["desktop"].Start()
@@ -60,7 +60,7 @@ func main() {
 			buffer.WriteString("C ")
 			buffer.WriteString(strings.TrimSpace(Command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
 			i.Cache = buffer.String()
-			time.Sleep(time.Second * time.Duration(2))
+			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
 	items["cpu"].Start()
@@ -70,7 +70,7 @@ func main() {
 			buffer.WriteString("Mem: ")
 			buffer.WriteString(Command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
 			i.Cache = buffer.String()
-			time.Sleep(time.Second * time.Duration(2))
+			time.Sleep(time.Second * time.Duration(10))
 
 		}
 	}}
@@ -82,7 +82,7 @@ func main() {
 			buffer.WriteString(Command("cat", "/sys/class/power_supply/BAT0/capacity"))
 			buffer.WriteString("%")
 			i.Cache = buffer.String()
-			time.Sleep(time.Second * time.Duration(20))
+			time.Sleep(time.Second * time.Duration(30))
 
 		}
 	}}
@@ -123,7 +123,7 @@ func main() {
 			t := time.Now().UTC()
 			i.Cache = t.Weekday().String() + " " + strconv.Itoa(t.Day()) + " " + t.Month().String() + " " + strconv.Itoa(t.Year()) + " " + fmt.Sprintf("%02d", t.Hour()) + ":" + fmt.Sprintf("%02d", t.Minute()) + " UTC"
 
-			time.Sleep(time.Second * time.Duration(1))
+			time.Sleep(time.Second * time.Duration(30))
 
 		}
 	}}
@@ -131,7 +131,7 @@ func main() {
 	items["kernel"] = &Item{"", func(i *Item) {
 		for {
 			i.Cache = Command("uname", "-r")
-			time.Sleep(time.Second * time.Duration(100))
+			time.Sleep(time.Second * time.Duration(200))
 
 		}
 	}}
@@ -141,6 +141,6 @@ func main() {
 	for {
 		fmt.Println(Compose(items))
 		// Sleep a second
-		time.Sleep(time.Second * time.Duration(1))
+		time.Sleep(time.Second * time.Duration(5))
 	}
 }
