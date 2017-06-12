@@ -24,7 +24,7 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
+	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + sep + items["sound"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
@@ -87,6 +87,19 @@ func main() {
 		}
 	}}
 	items["battery"].Start()
+	items["sound"] = &Item{"", func(i *Item) {
+		for {
+			var buffer bytes.Buffer
+			buffer.WriteString("Snd: ")
+			buffer.WriteString(Command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"))
+			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep -o '\\[off\\]'").Output(); err == nil {
+				buffer.WriteString(" M")
+			}
+			i.Cache = buffer.String()
+			time.Sleep(time.Second * time.Duration(30))
+		}
+	}}
+	items["sound"].Start()
 
 	items["music"] = &Item{"", func(i *Item) {
 		for {
