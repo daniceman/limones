@@ -24,7 +24,7 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + "%{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
+	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
