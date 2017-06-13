@@ -24,7 +24,16 @@ func (i *Item) Start() {
 
 func Compose(items map[string]*Item) (out string) {
 	const sep string = " | "
-	return "%{l} " + items["host"].Cache + sep + items["desktop"].Cache + sep + items["cpu"].Cache + sep + items["memory"].Cache + sep + items["battery"].Cache + sep + items["sound"].Cache + " %{r} " + items["music"].Cache + sep + items["date"].Cache + sep + items["kernel"].Cache
+	return "%{l} " +
+		items["host"].Cache + sep +
+		items["desktop"].Cache + sep +
+		items["cpu"].Cache + sep +
+		items["memory"].Cache + sep +
+		items["battery"].Cache + sep +
+		items["sound"].Cache + " %{r} " +
+		items["music"].Cache + sep +
+		items["date"].Cache + sep +
+		items["kernel"].Cache
 }
 
 func Command(name string, args ...string) string {
@@ -134,7 +143,12 @@ func main() {
 	items["date"] = &Item{"", func(i *Item) {
 		for {
 			t := time.Now().UTC()
-			i.Cache = t.Weekday().String() + " " + strconv.Itoa(t.Day()) + " " + t.Month().String() + " " + strconv.Itoa(t.Year()) + " " + fmt.Sprintf("%02d", t.Hour()) + ":" + fmt.Sprintf("%02d", t.Minute()) + " UTC"
+			i.Cache = t.Weekday().String() + " " +
+				strconv.Itoa(t.Day()) + " " +
+				t.Month().String() + " " +
+				strconv.Itoa(t.Year()) + " " +
+				fmt.Sprintf("%02d", t.Hour()) + ":" +
+				fmt.Sprintf("%02d", t.Minute()) + " UTC"
 
 			time.Sleep(time.Second * time.Duration(30))
 
