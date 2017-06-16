@@ -11,20 +11,20 @@ import (
 	"time"
 )
 
-type Item struct {
+type item struct {
 	Cache  string
-	Update Updater
+	Update updater
 }
 
-type Updater func(i *Item)
+type updater func(i *item)
 
-func (i *Item) Start() {
+func (i *item) start() {
 	go i.Update(i)
 }
 
-func Compose(items map[string]*Item) (out string) {
-	const sep string = " | "
-	return "%{l} " +
+func compose(items map[string]*item) (out string) {
+	const sep string = "%{F#ffae81ff} | %{F#ffd1d1d1}"
+	return "%{l} %{F#fff4bf75}" +
 		items["host"].Cache + sep +
 		items["desktop"].Cache + sep +
 		items["cpu"].Cache + sep +
@@ -36,71 +36,71 @@ func Compose(items map[string]*Item) (out string) {
 		items["kernel"].Cache
 }
 
-func Command(name string, args ...string) string {
+func command(name string, args ...string) string {
 	out, _ := exec.Command(name, args...).Output()
 	return strings.TrimSpace(string(out))
 }
 
 func main() {
 
-	items := make(map[string]*Item)
+	items := make(map[string]*item)
 
-	items["host"] = &Item{"", func(i *Item) {
+	items["host"] = &item{"", func(i *item) {
 		for {
 			i.Cache, _ = os.Hostname()
 			time.Sleep(time.Second * time.Duration(1000))
 		}
 	}}
-	items["host"].Start()
-	items["desktop"] = &Item{"", func(i *Item) {
+	items["host"].start()
+	items["desktop"] = &item{"", func(i *item) {
 		for {
-			i.Cache = Command("bash", "-c", "xprop -root _NET_CURRENT_DESKTOP | awk '{print $3+1}'")
+			i.Cache = command("bash", "-c", "xprop -root _NET_CURRENT_DESKTOP | awk '{print $3+1}'")
 			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
-	items["desktop"].Start()
-	items["cpu"] = &Item{"", func(i *Item) {
+	items["desktop"].start()
+	items["cpu"] = &item{"", func(i *item) {
 		for {
 			var buffer bytes.Buffer
 			buffer.WriteString("Cpu: ")
-			buffer.WriteString(strings.TrimSpace(Command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]")))
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]")))
 			buffer.WriteString("% ")
-			buffer.WriteString(strings.TrimSpace(Command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'")))
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'")))
 			buffer.WriteString("C ")
-			buffer.WriteString(strings.TrimSpace(Command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
 			i.Cache = buffer.String()
 			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
-	items["cpu"].Start()
-	items["memory"] = &Item{"", func(i *Item) {
+	items["cpu"].start()
+	items["memory"] = &item{"", func(i *item) {
 		for {
 			var buffer bytes.Buffer
 			buffer.WriteString("Mem: ")
-			buffer.WriteString(Command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
+			buffer.WriteString(command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
 			i.Cache = buffer.String()
 			time.Sleep(time.Second * time.Duration(10))
 
 		}
 	}}
-	items["memory"].Start()
-	items["battery"] = &Item{"", func(i *Item) {
+	items["memory"].start()
+	items["battery"] = &item{"", func(i *item) {
 		for {
 			var buffer bytes.Buffer
 			buffer.WriteString("Bat: ")
-			buffer.WriteString(Command("cat", "/sys/class/power_supply/BAT0/capacity"))
+			buffer.WriteString(command("cat", "/sys/class/power_supply/BAT0/capacity"))
 			buffer.WriteString("%")
 			i.Cache = buffer.String()
 			time.Sleep(time.Second * time.Duration(30))
 
 		}
 	}}
-	items["battery"].Start()
-	items["sound"] = &Item{"", func(i *Item) {
+	items["battery"].start()
+	items["sound"] = &item{"", func(i *item) {
 		for {
 			var buffer bytes.Buffer
 			buffer.WriteString("Snd: ")
-			buffer.WriteString(Command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"))
+			buffer.WriteString(command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"))
 			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep -o '\\[off\\]'").Output(); err == nil {
 				buffer.WriteString(" M")
 			}
@@ -108,9 +108,9 @@ func main() {
 			time.Sleep(time.Second * time.Duration(30))
 		}
 	}}
-	items["sound"].Start()
+	items["sound"].start()
 
-	items["music"] = &Item{"", func(i *Item) {
+	items["music"] = &item{"", func(i *item) {
 		for {
 			client, err := mpd.Dial("tcp", "localhost:6600")
 			if err != nil {
@@ -139,8 +139,8 @@ func main() {
 			time.Sleep(time.Second * time.Duration(5))
 		}
 	}}
-	items["music"].Start()
-	items["date"] = &Item{"", func(i *Item) {
+	items["music"].start()
+	items["date"] = &item{"", func(i *item) {
 		for {
 			t := time.Now().UTC()
 			i.Cache = t.Weekday().String() + " " +
@@ -154,19 +154,19 @@ func main() {
 
 		}
 	}}
-	items["date"].Start()
-	items["kernel"] = &Item{"", func(i *Item) {
+	items["date"].start()
+	items["kernel"] = &item{"", func(i *item) {
 		for {
-			i.Cache = Command("uname", "-r")
+			i.Cache = command("uname", "-r")
 			time.Sleep(time.Second * time.Duration(200))
 
 		}
 	}}
-	items["kernel"].Start()
+	items["kernel"].start()
 
 	time.Sleep(time.Second * time.Duration(2))
 	for {
-		fmt.Println(Compose(items))
+		fmt.Println(compose(items))
 		// Sleep a second
 		time.Sleep(time.Second * time.Duration(5))
 	}
