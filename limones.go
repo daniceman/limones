@@ -111,9 +111,11 @@ func main() {
 	items["sound"].start()
 
 	items["music"] = &item{"", func(i *item) {
+		i.Cache = "n.a. - n.a."
+		client, _ := mpd.Dial("tcp", "localhost:6600")
 		for {
-			client, err := mpd.Dial("tcp", "localhost:6600")
-			if err != nil {
+			if client == nil || client.Ping() != nil {
+				client, _ = mpd.Dial("tcp", "localhost:6600")
 				time.Sleep(time.Second * time.Duration(5))
 				continue
 			}
