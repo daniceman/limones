@@ -1,0 +1,15 @@
+language: go
+install:
+- go get -u "github.com/fhs/gompd/mpd"
+go:
+- master
+script:
+- go build
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: E8pOboChBB7VxE2zsvQ0aZ8H+N9DDrzXBjQUcbML/eCHreuuCZ3WZf6rvyLq2gRqL5kMboIVZq8eOWIkE1hJTqiIt+rCBKbloHnNarxYx4+CL0aMAI2ehJj8f3siGcRtdi6kHVlGBCP2lkkUUrJljvcL21tsB0nUHPFR6BUnLwlfpX3EURiNk5/QmuKtWDWl/a1UJ1rwkte+dVT9AFVW42qvODeSXpg3yOT3xVfgfh8tQFZgnUvXoJ4R26lLH30D84LKQ7slUAMr1wwsDAIEnguPa6YEgQ7/g1cwpSksYj9wGC/fRK5KvN9CwRUP2/u9NVOTj81kkpuw5uGTrvDZp7BShpmHoSe8UgwnjV+jq5OHJ7u7srfLYfLOmylXOwjFdOdMD2fExScnNGc6+0vyECeWgTJY6ZwXV/pmexa8KKl8zy7xxUar8Ex43lsjojXfZrzhmfG/00pMihBuq6v7PAw+XVS56FaEkQCmp/4pL9hjDPaoIS9BB0ML8gt2K5Ncds3ALyDUGgJlV98N4h9zqtemBdlM45WcCrTil/6ctPWfNZBafItItG4bD2O//YKdUlsKnOKTR/h376yHr/tPwSHW0GT1mCUAgUPf7tSAHGg4lsuVS9RQGxtvoBimFa0KA7iw/UXhetcBsioqkgKZSxFYxCD92542LvEO7Ah75Jg=
+  file: limones
+  on:
+    repo: planchao/limones
