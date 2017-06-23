@@ -169,7 +169,7 @@ func main() {
 	time.Sleep(time.Second * time.Duration(2))
 	for {
 		fmt.Println(compose(items))
-		// Sleep a second
+		// Sleep 5 seconds
 		time.Sleep(time.Second * time.Duration(5))
 	}
 }
