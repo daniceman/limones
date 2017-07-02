@@ -24,7 +24,7 @@ func (i *item) start() {
 
 func compose(items map[string]*item) (out string) {
 	const sep string = "%{F#ffae81ff} | %{F#ffd1d1d1}"
-	return "%{l} %{F#fff4bf75}" +
+	return "%{l} %{F#ffa6e22e}" +
 		items["host"].Cache + sep +
 		items["desktop"].Cache + sep +
 		items["cpu"].Cache + sep +
