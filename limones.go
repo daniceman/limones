@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/fhs/gompd/mpd"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fhs/gompd/mpd"
 )
 
 type item struct {
@@ -23,7 +24,7 @@ func (i *item) start() {
 }
 
 func compose(items map[string]*item) (out string) {
-	const sep string = "%{F#ffae81ff} | %{F#ffd1d1d1}"
+	const sep string = "%{F#ff66d9ef} | %{F#fff8f8f2}"
 	return "%{l} %{F#ffa6e22e}" +
 		items["host"].Cache + sep +
 		items["desktop"].Cache + sep +
@@ -65,8 +66,10 @@ func main() {
 			buffer.WriteString("Cpu: ")
 			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]")))
 			buffer.WriteString("% ")
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'")))
+			buffer.WriteString(" MHZ ")
 			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'")))
-			buffer.WriteString("C ")
+			buffer.WriteString(" °C ")
 			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
 			i.Cache = buffer.String()
 			time.Sleep(time.Second * time.Duration(5))
