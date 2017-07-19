@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -40,19 +39,28 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			var buffer bytes.Buffer
-			buffer.WriteString("Cpu: ")
-			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]")))
-			buffer.WriteString("% ")
-			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'")))
-			buffer.WriteString(" MHZ ")
-			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'")))
-			buffer.WriteString(" °C ")
-			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
-			cpu <- buffer.String()
+			cpu <- fmt.Sprintf("Cpu: %s%% %s MHZ %s °C %s",
+				command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]"),
+				command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'"),
+				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'"),
+				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'"))
 			time.Sleep(time.Second * time.Duration(5))
 		}
 	}(cpu)
+
+	go func(chan<- string) {
+		for {
+			memory <- fmt.Sprintf("Mem: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
+			time.Sleep(time.Second * time.Duration(10))
+		}
+	}(memory)
+
+	go func(chan<- string) {
+		for {
+			battery <- fmt.Sprintf("Bat: %s%%", command("cat", "/sys/class/power_supply/BAT0/capacity"))
+			time.Sleep(time.Second * time.Duration(30))
+		}
+	}(battery)
 
 	for {
 		select {
