@@ -78,7 +78,7 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			wifi <- fmt.Sprintf("Net: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c-7-"))
+			wifi <- fmt.Sprintf("Net: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"))
 			time.Sleep(time.Second * time.Duration(30))
 		}
 	}(wifi)
@@ -152,10 +152,10 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	const sep string = "%{F#ff66d9ef} | %{F#fff8f8f2}"
-	const start string = "%{l} %{F#ffa6e22e}"
+	const sep string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	const start string = "%{l}%{F#ffa6e22e}"
 	const rightAdjust string = "%{r}"
-	fmt.Printf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+	fmt.Printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 		start,
 		outs["host"], sep,
 		outs["desktop"], sep,
@@ -166,5 +166,5 @@ func print(outs map[string]string) {
 		outs["wifi"], rightAdjust,
 		outs["music"], sep,
 		outs["date"], sep,
-		outs["kernel"])
+		outs["kernel"]+"\n")
 }
