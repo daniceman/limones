@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -37,13 +38,35 @@ func main() {
 		}
 	}(desktop)
 
+	go func(chan<- string) {
+		for {
+			var buffer bytes.Buffer
+			buffer.WriteString("Cpu: ")
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]")))
+			buffer.WriteString("% ")
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'")))
+			buffer.WriteString(" MHZ ")
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'")))
+			buffer.WriteString(" °C ")
+			buffer.WriteString(strings.TrimSpace(command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'")))
+			cpu <- buffer.String()
+			time.Sleep(time.Second * time.Duration(5))
+		}
+	}(cpu)
+
 	for {
 		select {
-			case outs["host"] = <- host:
-				print(outs)
-			case outs["desktop"] = <- desktop:
-				print(outs)
+		case outs["host"] = <-host:
+		case outs["desktop"] = <-desktop:
+		case outs["cpu"] = <-cpu:
+		case outs["memory"] = <-memory:
+		case outs["battery"] = <-battery:
+		case outs["sound"] = <-sound:
+		case outs["music"] = <-music:
+		case outs["date"] = <-date:
+		case outs["kernel"] = <-kernel:
 		}
+		print(outs)
 	}
 }
 
@@ -56,5 +79,17 @@ func command(name string, args ...string) string {
 func print(outs map[string]string) {
 	const sep string = "%{F#ff66d9ef} | %{F#fff8f8f2}"
 	const start string = "%{l} %{F#ffa6e22e}"
-	fmt.Printf("%s %s %s", start, outs["host"], sep)
+	const rightAdjust string = "%{r}"
+	fmt.Printf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+		start,
+		outs["host"], sep,
+		outs["desktop"], sep,
+		outs["cpu"], sep,
+		outs["memory"], sep,
+		outs["battery"], sep,
+		outs["sound"], sep,
+		outs["wifi"], rightAdjust,
+		outs["music"], sep,
+		outs["date"], sep,
+		outs["kernel"])
 }
