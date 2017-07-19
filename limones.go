@@ -36,7 +36,7 @@ func main() {
 	go func(chan<- string) {
 		for {
 			desktop <- command("bash", "-c", "xprop -root _NET_CURRENT_DESKTOP | awk '{print $3+1}'")
-			time.Sleep(time.Second * time.Duration(1000))
+			time.Sleep(time.Second * time.Duration(5))
 		}
 	}(desktop)
 
@@ -72,7 +72,7 @@ func main() {
 				mute = " M"
 			}
 			sound <- fmt.Sprintf("Snd: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
-			time.Sleep(time.Second * time.Duration(30))
+			time.Sleep(time.Second * time.Duration(10))
 		}
 	}(sound)
 
@@ -109,7 +109,7 @@ func main() {
 			}
 
 			music <- fmt.Sprintf("%s - %s", artist, title)
-			time.Sleep(time.Second * time.Duration(5))
+			time.Sleep(time.Second * time.Duration(10))
 		}
 	}(music)
 
@@ -124,7 +124,7 @@ func main() {
 	go func(chan<- string) {
 		for {
 			kernel <- command("uname", "-r")
-			time.Sleep(time.Second * time.Duration(200))
+			time.Sleep(time.Second * time.Duration(1000))
 		}
 	}(kernel)
 
