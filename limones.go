@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/fhs/gompd/mpd"
 )
 
 func main() {
@@ -73,6 +75,58 @@ func main() {
 			time.Sleep(time.Second * time.Duration(30))
 		}
 	}(sound)
+
+	go func(chan<- string) {
+		for {
+			wifi <- fmt.Sprintf("Net: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c-7-"))
+			time.Sleep(time.Second * time.Duration(30))
+		}
+	}(wifi)
+
+	go func(chan<- string) {
+		music <- "n.a. - n.a."
+		client, _ := mpd.Dial("tcp", "localhost:6600")
+		for {
+			if client == nil || client.Ping() != nil {
+				client, _ = mpd.Dial("tcp", "localhost:6600")
+				time.Sleep(time.Second * time.Duration(5))
+				continue
+			}
+			defer client.Close()
+
+			attrs, err := client.CurrentSong()
+			if err != nil {
+				continue
+			}
+
+			artist := attrs["Artist"]
+			if artist == "" {
+				artist = "n.a."
+			}
+			title := attrs["Title"]
+			if title == "" {
+				title = "n.a."
+			}
+
+			music <- fmt.Sprintf("%s - %s", artist, title)
+			time.Sleep(time.Second * time.Duration(5))
+		}
+	}(music)
+
+	go func(chan<- string) {
+		for {
+			t := time.Now().UTC()
+			date <- fmt.Sprintf("%s %d %s %d %02d:%02d UTC", t.Weekday().String(), t.Day(), t.Month().String(), t.Year(), t.Hour(), t.Minute())
+			time.Sleep(time.Second * time.Duration(30))
+		}
+	}(date)
+
+	go func(chan<- string) {
+		for {
+			kernel <- command("uname", "-r")
+			time.Sleep(time.Second * time.Duration(200))
+		}
+	}(kernel)
 
 	for {
 		select {
