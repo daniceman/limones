@@ -16,6 +16,7 @@ func main() {
 	memory := make(chan string, 10)
 	battery := make(chan string, 10)
 	sound := make(chan string, 10)
+	wifi := make(chan string, 10)
 	music := make(chan string, 10)
 	date := make(chan string, 10)
 	kernel := make(chan string, 10)
@@ -62,6 +63,17 @@ func main() {
 		}
 	}(battery)
 
+	go func(chan<- string) {
+		for {
+			var mute string
+			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep -o '\\[off\\]'").Output(); err == nil {
+				mute = " M"
+			}
+			sound <- fmt.Sprintf("Snd: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
+			time.Sleep(time.Second * time.Duration(30))
+		}
+	}(sound)
+
 	for {
 		select {
 		case outs["host"] = <-host:
@@ -70,6 +82,7 @@ func main() {
 		case outs["memory"] = <-memory:
 		case outs["battery"] = <-battery:
 		case outs["sound"] = <-sound:
+		case outs["wifi"] = <-wifi:
 		case outs["music"] = <-music:
 		case outs["date"] = <-date:
 		case outs["kernel"] = <-kernel:
