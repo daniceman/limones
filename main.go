@@ -152,19 +152,23 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	const sep string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
-	const start string = "%{l}%{F#ffa6e22e}"
+	const leftAdjust string = "%{l}"
 	const rightAdjust string = "%{r}"
-	fmt.Printf("%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
-		start,
-		outs["host"], sep,
-		outs["desktop"], sep,
-		outs["cpu"], sep,
-		outs["memory"], sep,
-		outs["battery"], sep,
-		outs["sound"], sep,
+	const green string = "%{F#ffa6e22e}"
+	const red string = "%{F#fff92672}"
+	const sepBlue string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	fmt.Printf("%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
+		leftAdjust,
+		green,
+		outs["host"], sepBlue,
+		red,
+		outs["desktop"], sepBlue,
+		outs["cpu"], sepBlue,
+		outs["memory"], sepBlue,
+		outs["battery"], sepBlue,
+		outs["sound"], sepBlue,
 		outs["wifi"], rightAdjust,
-		outs["music"], sep,
-		outs["date"], sep,
+		outs["music"], sepBlue,
+		outs["date"], sepBlue,
 		outs["kernel"], "\n")
 }
