@@ -19,16 +19,16 @@ const (
 )
 
 func main() {
-	host := make(chan string, 10)
-	desktop := make(chan string, 10)
-	cpu := make(chan string, 10)
-	memory := make(chan string, 10)
-	battery := make(chan string, 10)
-	sound := make(chan string, 10)
-	wifi := make(chan string, 10)
-	music := make(chan string, 10)
-	date := make(chan string, 10)
-	kernel := make(chan string, 10)
+	host := make(chan string)
+	desktop := make(chan string)
+	cpu := make(chan string)
+	memory := make(chan string)
+	battery := make(chan string)
+	sound := make(chan string)
+	wifi := make(chan string)
+	music := make(chan string)
+	date := make(chan string)
+	kernel := make(chan string)
 
 	outs := make(map[string]string)
 
