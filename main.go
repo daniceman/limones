@@ -35,7 +35,7 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			desktop <- command("bash", "-c", "xprop -root _NET_CURRENT_DESKTOP | awk '{print $3+1}'")
+			desktop <- command("bspc", "query", "-D", "-d", "--names")
 			time.Sleep(time.Second * time.Duration(5))
 		}
 	}(desktop)
