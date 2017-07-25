@@ -10,8 +10,15 @@ import (
 	"github.com/fhs/gompd/mpd"
 )
 
-func main() {
+const (
+	leftAdjust string = "%{l}"
+	rightAdjust string = "%{r}"
+	green string = "%{F#ffa6e22e}"
+	red string = "%{F#fff92672}"
+	sepBlue string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+)
 
+func main() {
 	host := make(chan string, 10)
 	desktop := make(chan string, 10)
 	cpu := make(chan string, 10)
@@ -29,14 +36,14 @@ func main() {
 		for {
 			h, _ := os.Hostname()
 			host <- h
-			time.Sleep(time.Second * time.Duration(1000))
+			time.Sleep(1000 * time.Second)
 		}
 	}(host)
 
 	go func(chan<- string) {
 		for {
 			desktop <- command("bspc", "query", "-D", "-d", "--names")
-			time.Sleep(time.Second * time.Duration(5))
+			time.Sleep(5 * time.Second)
 		}
 	}(desktop)
 
@@ -47,21 +54,21 @@ func main() {
 				command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'"),
 				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'"),
 				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'"))
-			time.Sleep(time.Second * time.Duration(5))
+			time.Sleep(5 * time.Second)
 		}
 	}(cpu)
 
 	go func(chan<- string) {
 		for {
 			memory <- fmt.Sprintf("M: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
-			time.Sleep(time.Second * time.Duration(10))
+			time.Sleep( 10 * time.Second)
 		}
 	}(memory)
 
 	go func(chan<- string) {
 		for {
 			battery <- fmt.Sprintf("B: %s%%", command("cat", "/sys/class/power_supply/BAT0/capacity"))
-			time.Sleep(time.Second * time.Duration(30))
+			time.Sleep(30 * time.Second)
 		}
 	}(battery)
 
@@ -72,14 +79,14 @@ func main() {
 				mute = " M"
 			}
 			sound <- fmt.Sprintf("S: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
-			time.Sleep(time.Second * time.Duration(10))
+			time.Sleep(10 * time.Second)
 		}
 	}(sound)
 
 	go func(chan<- string) {
 		for {
 			wifi <- fmt.Sprintf("N: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"))
-			time.Sleep(time.Second * time.Duration(30))
+			time.Sleep(30 * time.Second)
 		}
 	}(wifi)
 
@@ -89,7 +96,7 @@ func main() {
 		for {
 			if client == nil || client.Ping() != nil {
 				client, _ = mpd.Dial("tcp", "localhost:6600")
-				time.Sleep(time.Second * time.Duration(5))
+				time.Sleep(5 * time.Second)
 				continue
 			}
 			defer client.Close()
@@ -109,7 +116,7 @@ func main() {
 			}
 
 			music <- fmt.Sprintf("%s - %s", artist, title)
-			time.Sleep(time.Second * time.Duration(10))
+			time.Sleep(10 * time.Second)
 		}
 	}(music)
 
@@ -117,14 +124,14 @@ func main() {
 		for {
 			t := time.Now().UTC()
 			date <- fmt.Sprintf("%s %d %s %d %02d:%02d UTC", t.Weekday().String(), t.Day(), t.Month().String(), t.Year(), t.Hour(), t.Minute())
-			time.Sleep(time.Second * time.Duration(30))
+			time.Sleep(30 * time.Second)
 		}
 	}(date)
 
 	go func(chan<- string) {
 		for {
 			kernel <- command("uname", "-r")
-			time.Sleep(time.Second * time.Duration(1000))
+			time.Sleep(1000 * time.Second)
 		}
 	}(kernel)
 
@@ -152,11 +159,6 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	const leftAdjust string = "%{l}"
-	const rightAdjust string = "%{r}"
-	const green string = "%{F#ffa6e22e}"
-	const red string = "%{F#fff92672}"
-	const sepBlue string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
 	fmt.Printf("%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		leftAdjust,
 		green,
