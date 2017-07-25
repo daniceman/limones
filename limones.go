@@ -42,7 +42,7 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			cpu <- fmt.Sprintf("Cpu: %s%% %s MHZ %s °C %s",
+			cpu <- fmt.Sprintf("C: %s%% %s MHZ %s °C %s",
 				command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]"),
 				command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'"),
 				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'"),
@@ -53,14 +53,14 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			memory <- fmt.Sprintf("Mem: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
+			memory <- fmt.Sprintf("M: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
 			time.Sleep(time.Second * time.Duration(10))
 		}
 	}(memory)
 
 	go func(chan<- string) {
 		for {
-			battery <- fmt.Sprintf("Bat: %s%%", command("cat", "/sys/class/power_supply/BAT0/capacity"))
+			battery <- fmt.Sprintf("B: %s%%", command("cat", "/sys/class/power_supply/BAT0/capacity"))
 			time.Sleep(time.Second * time.Duration(30))
 		}
 	}(battery)
@@ -71,14 +71,14 @@ func main() {
 			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep -o '\\[off\\]'").Output(); err == nil {
 				mute = " M"
 			}
-			sound <- fmt.Sprintf("Snd: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
+			sound <- fmt.Sprintf("S: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
 			time.Sleep(time.Second * time.Duration(10))
 		}
 	}(sound)
 
 	go func(chan<- string) {
 		for {
-			wifi <- fmt.Sprintf("Net: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"))
+			wifi <- fmt.Sprintf("N: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"))
 			time.Sleep(time.Second * time.Duration(30))
 		}
 	}(wifi)
@@ -155,7 +155,7 @@ func print(outs map[string]string) {
 	const sep string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
 	const start string = "%{l}%{F#ffa6e22e}"
 	const rightAdjust string = "%{r}"
-	fmt.Printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+	fmt.Printf("%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		start,
 		outs["host"], sep,
 		outs["desktop"], sep,
@@ -166,5 +166,5 @@ func print(outs map[string]string) {
 		outs["wifi"], rightAdjust,
 		outs["music"], sep,
 		outs["date"], sep,
-		outs["kernel"]+"\n")
+		outs["kernel"], "\n")
 }
