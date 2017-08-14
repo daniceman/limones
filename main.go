@@ -11,11 +11,14 @@ import (
 )
 
 const (
-	leftAdjust string = "%{l}"
+	leftAdjust  string = "%{l}"
 	rightAdjust string = "%{r}"
-	green string = "%{F#ffa6e22e}"
-	red string = "%{F#fff92672}"
-	sepBlue string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	greenBack   string = "%{B#ffa6e22e}%{F#ff272822}"
+	greenFront  string = "%{F#ffa6e22e}%{B#ff272822}"
+	normalBack  string = "%{B#ff272822}%{F#fff8f8f2}"
+	red         string = "%{F#fff92672}"
+	sepBlue     string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	powerline   string = ""
 )
 
 func main() {
@@ -61,7 +64,7 @@ func main() {
 	go func(chan<- string) {
 		for {
 			memory <- fmt.Sprintf("M: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
-			time.Sleep( 10 * time.Second)
+			time.Sleep(10 * time.Second)
 		}
 	}(memory)
 
@@ -159,11 +162,11 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	fmt.Printf("%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
+	fmt.Printf("%s%s %s %s%s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		leftAdjust,
-		green,
-		outs["host"], sepBlue,
-		red,
+		greenBack,
+		outs["host"], greenFront, powerline,
+		normalBack, red,
 		outs["desktop"], sepBlue,
 		outs["cpu"], sepBlue,
 		outs["memory"], sepBlue,
