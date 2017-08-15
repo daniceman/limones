@@ -11,14 +11,15 @@ import (
 )
 
 const (
-	leftAdjust  string = "%{l}"
-	rightAdjust string = "%{r}"
-	greenBack   string = "%{B#ffa6e22e}%{F#ff272822}"
-	greenFront  string = "%{F#ffa6e22e}%{B#ff272822}"
-	normalBack  string = "%{B#ff272822}%{F#fff8f8f2}"
-	red         string = "%{F#fff92672}"
-	sepBlue     string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
-	powerline   string = ""
+	leftAdjust          string = "%{l}"
+	rightAdjust         string = "%{r}"
+	greenBackBlackFront string = "%{B#ffa6e22e}%{F#ff272822}"
+	redBackGreenFront   string = "%{B#fff92672}%{F#ffa6e22e}"
+	redBackBlackFront   string = "%{B#fff92672}%{F#ff272822}"
+	blackBackWhiteFront string = "%{B#ff272822}%{F#fff8f8f2}"
+	blackBackRedFront   string = "%{B#ff272822}%{F#fff92672}"
+	separatorBlue       string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	powerline           string = ""
 )
 
 func main() {
@@ -162,18 +163,21 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	fmt.Printf("%s%s %s %s%s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
+	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		leftAdjust,
-		greenBack,
-		outs["host"], greenFront, powerline,
-		normalBack, red,
-		outs["desktop"], sepBlue,
-		outs["cpu"], sepBlue,
-		outs["memory"], sepBlue,
-		outs["battery"], sepBlue,
-		outs["sound"], sepBlue,
+		greenBackBlackFront,
+		outs["host"],
+		redBackGreenFront, powerline,
+		redBackBlackFront,
+		outs["desktop"],
+		blackBackRedFront, powerline,
+		blackBackWhiteFront,
+		outs["cpu"], separatorBlue,
+		outs["memory"], separatorBlue,
+		outs["battery"], separatorBlue,
+		outs["sound"], separatorBlue,
 		outs["wifi"], rightAdjust,
-		outs["music"], sepBlue,
-		outs["date"], sepBlue,
+		outs["music"], separatorBlue,
+		outs["date"], separatorBlue,
 		outs["kernel"], "\n")
 }
