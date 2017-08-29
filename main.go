@@ -32,7 +32,6 @@ func main() {
 	wifi := make(chan string)
 	music := make(chan string)
 	date := make(chan string)
-	kernel := make(chan string)
 
 	outs := make(map[string]string)
 
@@ -132,13 +131,6 @@ func main() {
 		}
 	}(date)
 
-	go func(chan<- string) {
-		for {
-			kernel <- command("uname", "-r")
-			time.Sleep(1000 * time.Second)
-		}
-	}(kernel)
-
 	for {
 		select {
 		case outs["host"] = <-host:
@@ -150,7 +142,6 @@ func main() {
 		case outs["wifi"] = <-wifi:
 		case outs["music"] = <-music:
 		case outs["date"] = <-date:
-		case outs["kernel"] = <-kernel:
 		}
 		print(outs)
 	}
@@ -163,7 +154,7 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
+	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		leftAdjust,
 		greenBackBlackFront,
 		outs["host"],
@@ -178,6 +169,5 @@ func print(outs map[string]string) {
 		outs["sound"], separatorBlue,
 		outs["wifi"], rightAdjust,
 		outs["music"], separatorBlue,
-		outs["date"], separatorBlue,
-		outs["kernel"], "\n")
+		outs["date"], "\n")
 }
