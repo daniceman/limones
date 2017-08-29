@@ -155,14 +155,9 @@ func command(name string, args ...string) string {
 
 func print(outs map[string]string) {
 	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
-		leftAdjust,
-		greenBackBlackFront,
-		outs["host"],
-		redBackGreenFront, powerline,
-		redBackBlackFront,
-		outs["desktop"],
-		blackBackRedFront, powerline,
-		blackBackWhiteFront,
+		leftAdjust, greenBackBlackFront,
+		outs["host"], redBackGreenFront, powerline, redBackBlackFront,
+		outs["desktop"], blackBackRedFront, powerline, blackBackWhiteFront,
 		outs["cpu"], separatorBlue,
 		outs["memory"], separatorBlue,
 		outs["battery"], separatorBlue,
