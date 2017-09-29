@@ -78,10 +78,10 @@ func main() {
 	go func(chan<- string) {
 		for {
 			var mute string
-			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep -o '\\[off\\]'").Output(); err == nil {
+			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep 'Front Left:' | grep -o '\\[off\\]'").Output(); err == nil {
 				mute = " M"
 			}
-			sound <- fmt.Sprintf("S: %s%s", command("bash", "-c", "amixer sget Master | grep -o '[0-9]*\\%'"), mute)
+			sound <- fmt.Sprintf("S: %s%s", command("bash", "-c", "amixer sget Master | grep 'Front Left:' | grep -o '[0-9]*\\%'"), mute)
 			time.Sleep(10 * time.Second)
 		}
 	}(sound)
