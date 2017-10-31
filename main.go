@@ -158,11 +158,11 @@ func print(outs map[string]string) {
 		leftAdjust, greenBackBlackFront,
 		outs["host"], redBackGreenFront, powerline, redBackBlackFront,
 		outs["desktop"], blackBackRedFront, powerline, blackBackWhiteFront,
-		outs["cpu"], separatorBlue,
-		outs["memory"], separatorBlue,
-		outs["battery"], separatorBlue,
+		outs["date"], separatorBlue,
+		outs["music"], rightAdjust,
+		outs["wifi"], separatorBlue,
 		outs["sound"], separatorBlue,
-		outs["wifi"], rightAdjust,
-		outs["music"], separatorBlue,
-		outs["date"], "\n")
+		outs["battery"], separatorBlue,
+		outs["memory"], separatorBlue,
+		outs["cpu"], "\n")
 }
