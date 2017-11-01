@@ -125,8 +125,11 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			t := time.Now().UTC()
-			date <- fmt.Sprintf("%s %d-%02d-%02d %02d:%02d UTC", t.Weekday().String()[:3], t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute())
+			utc := time.Now().UTC()
+			utcZone, _ := utc.Zone()
+			t := time.Now()
+			tZone, _ := t.Zone()
+			date <- fmt.Sprintf("%s %d-%02d-%02d %02d:%02d %s / %02d:%02d %s", t.Weekday().String()[:3], t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), tZone, utc.Hour(), utc.Minute(), utcZone)
 			time.Sleep(30 * time.Second)
 		}
 	}(date)
