@@ -84,7 +84,7 @@ func main() {
 
 			lastSectorReads = reads
 			lastSectorWrites = writes
-			io <- fmt.Sprintf("I: %.02fR %.02fW kb/s", readsPerSecond, writesPerSecond)
+			io <- fmt.Sprintf("IO: %.02fR %.02fW kb/s", readsPerSecond, writesPerSecond)
 			time.Sleep(5 * time.Second)
 		}
 	}(io)
