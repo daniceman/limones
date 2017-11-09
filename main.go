@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -71,7 +72,15 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			battery <- fmt.Sprintf("B: %s%%", command("cat", "/sys/class/power_supply/BAT0/capacity"))
+			raw, err := ioutil.ReadFile("/sys/class/power_supply/BAT0/capacity")
+			if err != nil {
+				report(err)
+			}
+			percentage, err := strconv.Atoi(strings.TrimSpace(string(raw)))
+			if err != nil {
+				report(err)
+			}
+			battery <- fmt.Sprintf("B: %v%%", percentage)
 			time.Sleep(30 * time.Second)
 		}
 	}(battery)
@@ -173,4 +182,8 @@ func print(outs map[string]string) {
 		outs["battery"], separatorBlue,
 		outs["memory"], separatorBlue,
 		outs["cpu"], "\n")
+}
+
+func report(err error) {
+	fmt.Fprintf(os.Stderr, "Error occured: %v", err)
 }
