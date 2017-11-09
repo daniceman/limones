@@ -28,6 +28,7 @@ const (
 func main() {
 	host := make(chan string)
 	desktop := make(chan string)
+	io := make(chan string)
 	cpu := make(chan string)
 	memory := make(chan string)
 	battery := make(chan string)
@@ -55,6 +56,38 @@ func main() {
 			time.Sleep(5 * time.Second)
 		}
 	}(desktop)
+
+	var lastSectorReads, lastSectorWrites uint64
+	go func(chan<- string) {
+		for {
+			rIO := regexp.MustCompile("sda(.)+")
+			raw, err := ioutil.ReadFile("/proc/diskstats")
+			if err != nil {
+				report(err)
+			}
+			match := rIO.FindString(string(raw))
+			IOInfos := strings.Split(strings.TrimSpace(strings.Replace(match, "sda", "", 1)), " ")
+
+			parse, err := strconv.Atoi(IOInfos[2])
+			if err != nil {
+				report(err)
+			}
+			reads := uint64(parse)
+			parse, err = strconv.Atoi(IOInfos[6])
+			if err != nil {
+				report(err)
+			}
+			writes := uint64(parse)
+
+			readsPerSecond := float32(reads-lastSectorReads) * 512 / (5 * 60 * 1024)
+			writesPerSecond := float32(writes-lastSectorWrites) * 512 / (5 * 60 * 1024)
+
+			lastSectorReads = reads
+			lastSectorWrites = writes
+			io <- fmt.Sprintf("I: %.02fR %.02fW kb/s", readsPerSecond, writesPerSecond)
+			time.Sleep(5 * time.Second)
+		}
+	}(io)
 
 	var lastCPUTotal, lastCPUIdle uint64
 	go func(chan<- string) {
@@ -197,7 +230,7 @@ func main() {
 			}
 			percentage := float32(link) / 70.0 * 100.0
 
-			content = command("bash", "-c", "iw dev wlp2s0 link")
+			content = command("iw", "dev", "wlp2s0", "link")
 			r = regexp.MustCompile("SSID: (.)+")
 			match = r.FindString(content)
 			ssid := strings.Replace(match, "SSID: ", "", 1)
@@ -252,6 +285,7 @@ func main() {
 		select {
 		case outs["host"] = <-host:
 		case outs["desktop"] = <-desktop:
+		case outs["io"] = <-io:
 		case outs["cpu"] = <-cpu:
 		case outs["memory"] = <-memory:
 		case outs["battery"] = <-battery:
@@ -271,7 +305,7 @@ func command(name string, args ...string) string {
 }
 
 func print(outs map[string]string) {
-	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
+	fmt.Printf("%s%s %s %s%s %s%s %s%s %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s %s",
 		leftAdjust, greenBackBlackFront,
 		outs["host"], redBackGreenFront, powerline, redBackBlackFront,
 		outs["desktop"], blackBackRedFront, powerline, blackBackWhiteFront,
@@ -280,6 +314,7 @@ func print(outs map[string]string) {
 		outs["wifi"], separatorBlue,
 		outs["sound"], separatorBlue,
 		outs["battery"], separatorBlue,
+		outs["io"], separatorBlue,
 		outs["memory"], separatorBlue,
 		outs["cpu"], "\n")
 }
