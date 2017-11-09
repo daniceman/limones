@@ -56,7 +56,7 @@ func main() {
 		}
 	}(desktop)
 
-	var lastCPUTotal, lastCPUIdle uint32
+	var lastCPUTotal, lastCPUIdle uint64
 	go func(chan<- string) {
 		for {
 			rCPU := regexp.MustCompile("cpu(.)+")
@@ -74,18 +74,18 @@ func main() {
 			if err != nil {
 				report(err)
 			}
-			idle := uint32(parse)
-			var total uint32
+			idle := uint64(parse)
+			var total uint64
 			for _, stat := range cpuInfos {
 				parse, err := strconv.Atoi(stat)
 				if err != nil {
 					report(err)
 				}
-				total += uint32(parse)
+				total += uint64(parse)
 			}
 			diffTotal := total - lastCPUTotal
 			diffIdle := idle - lastCPUIdle
-			usage := (uint32(1000)*(diffTotal-diffIdle)/diffTotal + uint32(5)) / uint32(10)
+			usage := (uint64(1000)*(diffTotal-diffIdle)/diffTotal + uint64(5)) / uint64(10)
 
 			lastCPUIdle = idle
 			lastCPUTotal = total
