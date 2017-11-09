@@ -56,26 +56,88 @@ func main() {
 		}
 	}(desktop)
 
+	var lastCPUTotal, lastCPUIdle uint32
 	go func(chan<- string) {
 		for {
-			cpu <- fmt.Sprintf("C: %s%% %s MHZ %s °C %s",
-				command("bash", "-c", "echo $[100-$(vmstat 1 2|tail -1|awk '{print $15}')]"),
-				command("bash", "-c", "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | awk '{print $1/1000}'"),
-				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep temp1 | grep -o '+[0-9]*\\.[0-9]'"),
-				command("bash", "-c", "sensors | grep thinkpad-isa-0000 -A 5 | grep fan1 | grep -o '[0-9]* RPM'"))
+			rCPU := regexp.MustCompile("cpu(.)+")
+			rThermal := regexp.MustCompile("temperatures\\:(\\s)*(\\d)+")
+			rFan := regexp.MustCompile("speed\\:(\\s)*(\\d)+")
+
+			raw, err := ioutil.ReadFile("/proc/stat")
+			if err != nil {
+				report(err)
+			}
+			match := rCPU.FindString(string(raw))
+			cpuInfos := strings.Split(strings.TrimSpace(strings.Replace(match, "cpu", "", 1)), " ")
+
+			parse, err := strconv.Atoi(cpuInfos[3])
+			if err != nil {
+				report(err)
+			}
+			idle := uint32(parse)
+			var total uint32
+			for _, stat := range cpuInfos {
+				parse, err := strconv.Atoi(stat)
+				if err != nil {
+					report(err)
+				}
+				total += uint32(parse)
+			}
+			diffTotal := total - lastCPUTotal
+			diffIdle := idle - lastCPUIdle
+			usage := (uint32(1000)*(diffTotal-diffIdle)/diffTotal + uint32(5)) / uint32(10)
+
+			lastCPUIdle = idle
+			lastCPUTotal = total
+
+			raw, err = ioutil.ReadFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq")
+			if err != nil {
+				report(err)
+			}
+			frequency, err := strconv.Atoi(strings.TrimSpace(string(raw)))
+			if err != nil {
+				report(err)
+			}
+
+			raw, err = ioutil.ReadFile("/proc/acpi/ibm/thermal")
+			if err != nil {
+				report(err)
+			}
+			match = rThermal.FindString(string(raw))
+			temperature, err := strconv.Atoi(strings.TrimSpace(strings.Replace(match, "temperatures:", "", 1)))
+			if err != nil {
+				report(err)
+			}
+
+			raw, err = ioutil.ReadFile("/proc/acpi/ibm/fan")
+			if err != nil {
+				report(err)
+			}
+			match = rFan.FindString(string(raw))
+			fan, err := strconv.Atoi(strings.TrimSpace(strings.Replace(match, "speed:", "", 1)))
+			if err != nil {
+				report(err)
+			}
+
+			cpu <- fmt.Sprintf("C: %d%% %d MHZ %d °C %d RPM",
+				usage,
+				frequency/1000,
+				temperature,
+				fan)
 			time.Sleep(5 * time.Second)
 		}
 	}(cpu)
 
 	go func(chan<- string) {
 		for {
+			rTotal := regexp.MustCompile("MemTotal\\:(\\s)*(\\d)+")
+			rActive := regexp.MustCompile("Active\\(anon\\)\\:(\\s)*(\\d)+")
+
 			raw, err := ioutil.ReadFile("/proc/meminfo")
 			if err != nil {
 				report(err)
 			}
 			content := string(raw)
-			rTotal := regexp.MustCompile("MemTotal\\:(\\s)*(\\d)+")
-			rActive := regexp.MustCompile("Active\\(anon\\)\\:(\\s)*(\\d)+")
 			matchTotal := rTotal.FindString(content)
 			matchActive := rActive.FindString(content)
 
@@ -121,12 +183,13 @@ func main() {
 
 	go func(chan<- string) {
 		for {
+			r := regexp.MustCompile("\\d\\d\\.")
+
 			raw, err := ioutil.ReadFile("/proc/net/wireless")
 			if err != nil {
 				report(err)
 			}
 			content := string(raw)
-			r := regexp.MustCompile("\\d\\d\\.")
 			match := r.FindString(content)
 			link, err := strconv.Atoi(strings.Replace(match, ".", "", 1))
 			if err != nil {
