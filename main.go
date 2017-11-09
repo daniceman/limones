@@ -152,7 +152,7 @@ func main() {
 				report(err)
 			}
 
-			cpu <- fmt.Sprintf("C %d%% %d MHZ %d °C %d RPM",
+			cpu <- fmt.Sprintf("C %d%% %d MHZ %d°C %d RPM",
 				usage,
 				frequency/1000,
 				temperature,
