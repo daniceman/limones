@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -88,7 +89,11 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			wifi <- fmt.Sprintf("N: %s", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"))
+			link, err := strconv.Atoi(command("bash", "-c", "cat /proc/net/wireless | grep 'wlp2s0' | cut -c16-17"))
+			if err != nil {
+				link = 0
+			}
+			wifi <- fmt.Sprintf("N: %s %.02v%%", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"), float32(link)/70*100)
 			time.Sleep(30 * time.Second)
 		}
 	}(wifi)
