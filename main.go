@@ -40,7 +40,10 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			h, _ := os.Hostname()
+			h, err := os.Hostname()
+			if err != nil {
+				report(err)
+			}
 			host <- h
 			time.Sleep(1000 * time.Second)
 		}
@@ -66,7 +69,26 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			memory <- fmt.Sprintf("M: %s", command("bash", "-c", "free -m | awk 'NR==2{printf \"%.f%%\", $3*100/$2 }'"))
+			raw, err := ioutil.ReadFile("/proc/meminfo")
+			if err != nil {
+				report(err)
+			}
+			content := string(raw)
+			rTotal := regexp.MustCompile("MemTotal\\:(\\s)*(\\d)+")
+			rActive := regexp.MustCompile("Active\\(anon\\)\\:(\\s)*(\\d)+")
+			matchTotal := rTotal.FindString(content)
+			matchActive := rActive.FindString(content)
+
+			total, err := strconv.Atoi(strings.TrimSpace(strings.Replace(matchTotal, "MemTotal:", "", 1)))
+			if err != nil {
+				report(err)
+			}
+			active, err := strconv.Atoi(strings.TrimSpace(strings.Replace(matchActive, "Active(anon):", "", 1)))
+			if err != nil {
+				report(err)
+			}
+			percentage := float32(active) / float32(total) * 100.0
+			memory <- fmt.Sprintf("M: %.02v%%", percentage)
 			time.Sleep(10 * time.Second)
 		}
 	}(memory)
@@ -99,22 +121,22 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			content, err := ioutil.ReadFile("/proc/net/wireless")
+			raw, err := ioutil.ReadFile("/proc/net/wireless")
 			if err != nil {
 				report(err)
 			}
-			raw := string(content)
+			content := string(raw)
 			r := regexp.MustCompile("\\d\\d\\.")
-			match := r.FindString(raw)
+			match := r.FindString(content)
 			link, err := strconv.Atoi(strings.Replace(match, ".", "", 1))
 			if err != nil {
 				report(err)
 			}
 			percentage := float32(link) / 70.0 * 100.0
 
-			raw = command("bash", "-c", "iw dev wlp2s0 link")
+			content = command("bash", "-c", "iw dev wlp2s0 link")
 			r = regexp.MustCompile("SSID: (.)+")
-			match = r.FindString(raw)
+			match = r.FindString(content)
 			ssid := strings.Replace(match, "SSID: ", "", 1)
 
 			wifi <- fmt.Sprintf("N: %s %.02v%%", ssid, percentage)
