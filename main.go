@@ -84,7 +84,7 @@ func main() {
 
 			lastSectorReads = reads
 			lastSectorWrites = writes
-			io <- fmt.Sprintf("IO: %.02fR %.02fW kb/s", readsPerSecond, writesPerSecond)
+			io <- fmt.Sprintf("IO %.02fR %.02fW kb/s", readsPerSecond, writesPerSecond)
 			time.Sleep(5 * time.Second)
 		}
 	}(io)
@@ -152,7 +152,7 @@ func main() {
 				report(err)
 			}
 
-			cpu <- fmt.Sprintf("C: %d%% %d MHZ %d °C %d RPM",
+			cpu <- fmt.Sprintf("C %d%% %d MHZ %d °C %d RPM",
 				usage,
 				frequency/1000,
 				temperature,
@@ -183,7 +183,7 @@ func main() {
 				report(err)
 			}
 			percentage := float32(active) / float32(total) * 100.0
-			memory <- fmt.Sprintf("M: %.02v%%", percentage)
+			memory <- fmt.Sprintf("M %.02v%%", percentage)
 			time.Sleep(10 * time.Second)
 		}
 	}(memory)
@@ -198,7 +198,7 @@ func main() {
 			if err != nil {
 				report(err)
 			}
-			battery <- fmt.Sprintf("B: %v%%", percentage)
+			battery <- fmt.Sprintf("B %v%%", percentage)
 			time.Sleep(30 * time.Second)
 		}
 	}(battery)
@@ -209,7 +209,7 @@ func main() {
 			if _, err := exec.Command("bash", "-c", "amixer sget Master | grep 'Front Left:' | grep -o '\\[off\\]'").Output(); err == nil {
 				mute = " M"
 			}
-			sound <- fmt.Sprintf("S: %s%s", command("bash", "-c", "amixer sget Master | grep 'Front Left:' | grep -o '[0-9]*\\%'"), mute)
+			sound <- fmt.Sprintf("S %s%s", command("bash", "-c", "amixer sget Master | grep 'Front Left:' | grep -o '[0-9]*\\%'"), mute)
 			time.Sleep(10 * time.Second)
 		}
 	}(sound)
@@ -235,7 +235,7 @@ func main() {
 			match = r.FindString(content)
 			ssid := strings.Replace(match, "SSID: ", "", 1)
 
-			wifi <- fmt.Sprintf("N: %s %.02v%%", ssid, percentage)
+			wifi <- fmt.Sprintf("N %s %.02v%%", ssid, percentage)
 			time.Sleep(30 * time.Second)
 		}
 	}(wifi)
