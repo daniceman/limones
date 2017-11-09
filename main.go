@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -98,11 +99,25 @@ func main() {
 
 	go func(chan<- string) {
 		for {
-			link, err := strconv.Atoi(command("bash", "-c", "cat /proc/net/wireless | grep 'wlp2s0' | cut -c16-17"))
+			content, err := ioutil.ReadFile("/proc/net/wireless")
 			if err != nil {
-				link = 0
+				report(err)
 			}
-			wifi <- fmt.Sprintf("N: %s %.02v%%", command("bash", "-c", "iw dev wlp2s0 link | grep -o 'SSID:.*' | cut -c7-"), float32(link)/70*100)
+			raw := string(content)
+			r := regexp.MustCompile("\\d\\d\\.")
+			match := r.FindString(raw)
+			link, err := strconv.Atoi(strings.Replace(match, ".", "", 1))
+			if err != nil {
+				report(err)
+			}
+			percentage := float32(link) / 70.0 * 100.0
+
+			raw = command("bash", "-c", "iw dev wlp2s0 link")
+			r = regexp.MustCompile("SSID: (.)+")
+			match = r.FindString(raw)
+			ssid := strings.Replace(match, "SSID: ", "", 1)
+
+			wifi <- fmt.Sprintf("N: %s %.02v%%", ssid, percentage)
 			time.Sleep(30 * time.Second)
 		}
 	}(wifi)
