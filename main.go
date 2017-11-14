@@ -164,7 +164,6 @@ func main() {
 	go func(chan<- string) {
 		for {
 			rTotal := regexp.MustCompile("MemTotal\\:(\\s)*(\\d)+")
-			rFree := regexp.MustCompile("MemFree\\:(\\s)*(\\d)+")
 			rAvailable := regexp.MustCompile("MemAvailable\\:(\\s)*(\\d)+")
 
 			raw, err := ioutil.ReadFile("/proc/meminfo")
@@ -173,14 +172,9 @@ func main() {
 			}
 			content := string(raw)
 			matchTotal := rTotal.FindString(content)
-			matchFree := rFree.FindString(content)
 			matchAvailable := rAvailable.FindString(content)
 
 			total, err := strconv.Atoi(strings.TrimSpace(strings.Replace(matchTotal, "MemTotal:", "", 1)))
-			if err != nil {
-				report(err)
-			}
-			free, err := strconv.Atoi(strings.TrimSpace(strings.Replace(matchFree, "MemFree:", "", 1)))
 			if err != nil {
 				report(err)
 			}
@@ -188,7 +182,7 @@ func main() {
 			if err != nil {
 				report(err)
 			}
-			percentage := (float32(total) - (float32(free) + float32(available))) / float32(total) * 100.0
+			percentage := (float32(total) - float32(available)) / float32(total) * 100.0
 			memory <- fmt.Sprintf("M %.02v%%", percentage)
 			time.Sleep(10 * time.Second)
 		}
