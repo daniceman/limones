@@ -79,8 +79,8 @@ func main() {
 			}
 			writes := uint64(parse)
 
-			readsPerSecond := float32(reads-lastSectorReads) * 512 / (5 * 60 * 1024)
-			writesPerSecond := float32(writes-lastSectorWrites) * 512 / (5 * 60 * 1024)
+			readsPerSecond := float32(reads-lastSectorReads) * 512 / (5 * 1024)
+			writesPerSecond := float32(writes-lastSectorWrites) * 512 / (5 * 1024)
 
 			lastSectorReads = reads
 			lastSectorWrites = writes
