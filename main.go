@@ -79,8 +79,17 @@ func main() {
 			}
 			writes := uint64(parse)
 
-			readsPerSecond := float32(reads-lastSectorReads) * 512 / (5 * 1024)
-			writesPerSecond := float32(writes-lastSectorWrites) * 512 / (5 * 1024)
+			raw, err = ioutil.ReadFile("/sys/block/sda/queue/hw_sector_size")
+			if err != nil {
+				report(err)
+			}
+			sectorSize, err := strconv.Atoi(strings.TrimSpace(string(raw)))
+			if err != nil {
+				report(err)
+			}
+
+			readsPerSecond := float32(reads-lastSectorReads) * float32(sectorSize) / (5 * 1024)
+			writesPerSecond := float32(writes-lastSectorWrites) * float32(sectorSize) / (5 * 1024)
 
 			lastSectorReads = reads
 			lastSectorWrites = writes
@@ -91,6 +100,7 @@ func main() {
 
 	var lastCPUTotal, lastCPUIdle uint64
 	go func(chan<- string) {
+		// Maybe split this up into separate routines, aka: do i need to check clock freq every 5 seconds?
 		for {
 			rCPU := regexp.MustCompile("cpu(.)+")
 			rThermal := regexp.MustCompile("temperatures\\:(\\s)*(\\d)+")
