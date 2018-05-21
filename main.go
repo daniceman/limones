@@ -16,11 +16,11 @@ import (
 const (
 	leftAdjust          string = "%{l}"
 	rightAdjust         string = "%{r}"
-	greenBackBlackFront string = "%{B#ffa6e22e}%{F#ff272822}"
+	greenBackBlackFront string = "%{B#ffa6e22e}%{F#ff1b1d1e}"
 	redBackGreenFront   string = "%{B#fff92672}%{F#ffa6e22e}"
-	redBackBlackFront   string = "%{B#fff92672}%{F#ff272822}"
-	blackBackWhiteFront string = "%{B#ff272822}%{F#fff8f8f2}"
-	blackBackRedFront   string = "%{B#ff272822}%{F#fff92672}"
+	redBackBlackFront   string = "%{B#fff92672}%{F#ff1b1d1e}"
+	blackBackWhiteFront string = "%{B#ff1b1d1e}%{F#fff8f8f2}"
+	blackBackRedFront   string = "%{B#ff1b1d1e}%{F#fff92672}"
 	separatorBlue       string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
 	powerline           string = ""
 )
@@ -102,6 +102,8 @@ func main() {
 	go func(chan<- string) {
 		// Maybe split this up into separate routines, aka: do i need to check clock freq every 5 seconds?
 		for {
+			//Maybe ask Manuel about this, Should I move this up to precompile regex only once
+			//or should I leave it close to where it is needed for readability?
 			rCPU := regexp.MustCompile("cpu(.)+")
 			rThermal := regexp.MustCompile("temperatures\\:(\\s)*(\\d)+")
 			rFan := regexp.MustCompile("speed\\:(\\s)*(\\d)+")
