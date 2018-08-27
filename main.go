@@ -16,12 +16,12 @@ import (
 const (
 	leftAdjust          string = "%{l}"
 	rightAdjust         string = "%{r}"
-	greenBackBlackFront string = "%{B#ffa6e22e}%{F#ff1b1d1e}"
-	redBackGreenFront   string = "%{B#fff92672}%{F#ffa6e22e}"
-	redBackBlackFront   string = "%{B#fff92672}%{F#ff1b1d1e}"
-	blackBackWhiteFront string = "%{B#ff1b1d1e}%{F#fff8f8f2}"
-	blackBackRedFront   string = "%{B#ff1b1d1e}%{F#fff92672}"
-	separatorBlue       string = " %{F#ff66d9ef}|%{F#fff8f8f2} "
+	greenBackBlackFront string = "%{B#ffb8bb26}%{F#ff282828}"
+	redBackGreenFront   string = "%{B#fffb4934}%{F#ffb8bb26}"
+	redBackBlackFront   string = "%{B#fffb4934}%{F#ff282828}"
+	blackBackWhiteFront string = "%{B#ff282828}%{F#ffebdbb2}"
+	blackBackRedFront   string = "%{B#ff282828}%{F#fffb4934}"
+	separatorBlue       string = " %{F#ff83a598}|%{F#ffebdbb2} "
 	powerline           string = ""
 )
 
