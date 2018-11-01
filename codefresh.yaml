@@ -1,0 +1,30 @@
+title: builder
+type: build
+image_name: daniceman/limones
+working_directory: ./
+tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+dockerfile:
+  content: |-
+    # ---
+    # Go Builder Image
+    FROM golang:1.8-alpine AS builder
+
+    # Install mooaaaar build deps
+    RUN apk add --no-cache git
+
+    # set build arguments: GitHub user and repository
+    ARG GH_USER=daniceman
+    ARG GH_REPO=limones
+
+    # Create and set working directory
+    RUN mkdir -p /go/src/github.com/$GH_USER/$GH_REPO
+    WORKDIR /go/src/github.com//$GH_USER/$GH_REPO
+
+    # copy sources
+    COPY . .
+
+    # Install dependencies
+    RUN CGO_ENABLED=0 go get -u "github.com/fhs/gompd/mpd"
+
+    # Build application
+    RUN CGO_ENABLED=0 go build -v -o "dist/limones"
